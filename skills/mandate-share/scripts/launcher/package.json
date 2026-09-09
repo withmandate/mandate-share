@@ -1,0 +1,17 @@
+{
+  "name": "mandate-share-command",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "description": "User-local command for the installed Mandate Share skill",
+  "bin": {
+    "mandate-share": "mandate-share.mjs"
+  },
+  "files": [
+    "mandate-share.mjs"
+  ],
+  "engines": {
+    "node": ">=22.20.0"
+  }
+}

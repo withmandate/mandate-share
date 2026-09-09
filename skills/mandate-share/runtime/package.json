@@ -1,0 +1,40 @@
+{
+  "name": "mandate-share-runtime",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --import tsx --test tests/*.test.ts",
+    "typecheck": "tsc --noEmit",
+    "build": "node --import tsx cli.ts build",
+    "check": "node --import tsx cli.ts check"
+  },
+  "dependencies": {
+    "@mdx-js/mdx": "3.1.1",
+    "react": "19.2.7",
+    "react-dom": "19.2.7",
+    "remark-frontmatter": "5.0.0",
+    "remark-gfm": "4.0.1",
+    "remark-mdx-frontmatter": "5.2.0",
+    "typescript": "5.9.3",
+    "tsx": "4.23.13",
+    "esbuild": "0.28.2"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.17",
+    "@types/react-dom": "19.2.3",
+    "wrangler": "4.126.0",
+    "@types/node": "22.20.1"
+  },
+  "overrides": {
+    "remark-mdx-frontmatter@5.2.0": {
+      "toml": "4.2.0"
+    },
+    "miniflare@5.20260825.0-alpha": {
+      "sharp": "0.35.4"
+    }
+  },
+  "engines": {
+    "node": ">=22.20.0"
+  }
+}
