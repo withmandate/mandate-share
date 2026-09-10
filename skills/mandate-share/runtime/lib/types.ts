@@ -37,7 +37,7 @@ export interface Frontmatter {
   date?: string | Date;
   /** Topic label: ai | longevity | finance | world | guide. */
   topic?: string;
-  /** Initial visual theme; a reader's saved selection takes precedence. */
+  /** Accepted source metadata; reader appearance ignores this field. */
   theme?: Theme;
   /** One-line dek shown under the headline and on the index. */
   summary?: string;

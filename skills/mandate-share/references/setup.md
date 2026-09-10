@@ -1,6 +1,6 @@
 # Install, connect, and update
 
-Help the user choose agents, a folder for their library, and a default password, then guide browser sign-in for publishing. Operate the tooling for them. Save and reuse completed steps; do not start another store or site when they ask to finish setup.
+Help the user choose agents, a folder for their library, and sharing preferences, then guide browser sign-in for publishing. Reuse explicit preferences already saved in their user or agent profile when applicable. Operate the tooling for them. Save and reuse completed steps; do not start another store or site when they ask to finish setup.
 
 ## Install for the chosen agents
 
@@ -34,7 +34,7 @@ mandate-share setup --path /absolute/pages-folder
 
 The first store is named `personal` and becomes the default. Use `--store NAME` with `--path` to create or resume a named store. The folder must be empty or initialized, and separate from the tool, cache, configuration, and other stores. Routine work uses the default; explicit named-store work carries `--store NAME` throughout.
 
-Pages start private. Suggest a long, unique shared passphrase for their default. The user can tell you the password or say “Let me enter it myself.” For the latter, run `mandate-share password --default` and open its returned URL in their browser. Let them type, confirm, and choose Save password, then wait for the saved result; follow [passwords](passwords.md). Skipping a default leaves private pages unpublished until they receive a page password or the user explicitly chooses open access. Do not turn a missing password into public consent.
+Pages start private unless an explicit request or applicable saved sharing preference selects another audience; follow [privacy](privacy.md). For password protection, reuse the chosen saved profile or suggest a long, unique shared passphrase. The user can tell you the password or say “Let me enter it myself.” For the latter, run `mandate-share password --default` and explain that its returned URL is a local setup screen that keeps the value out of chat. Open it in their browser, let them type, confirm, and choose Save password, then wait for the saved result; follow [passwords](passwords.md). Saving is local and needs publication to reach readers. Skipping a default leaves private pages unpublished until they receive a page password or the user explicitly chooses open access. Do not turn a missing password into public consent.
 
 ## Connect Cloudflare
 
@@ -51,7 +51,7 @@ During sign-in, recommend [two-factor authentication for the Cloudflare account]
 
 Use Cloudflare Free for normal setup. The password screen performs derivation in the visitor’s browser, and the Worker performs a fast final check. Read the current [publishing limits](publishing.md#cloudflare-behavior-and-limits) and verify the live password flow. Do not require a paid account for basic protection, remove protection to fit a limit, or change billing without the user choosing it.
 
-Create a harmless sample, preview it, and show the page, protection setting, and destination before publication. Follow [publishing](publishing.md) for the full store inventory and live checks. If the user entered the password themselves, let them open the live page with it in their browser. Finish with the live link, pages folder, and saved protection preference. Report an unfinished step accurately and retain completed work.
+Create a harmless sample and preview it yourself. Make the page, protection setting, and destination reviewable without requiring the user to open the local preview. Follow [publishing](publishing.md) through publication and live checks when the task or standing authorization covers the exact store inventory. If the user entered the password themselves, let them open the live page with it in their browser. Finish with the live link, pages folder, and saved sharing preference. Published pages work without the publisher’s computer. Report an unfinished step accurately and retain completed work.
 
 ## Updates
 

@@ -8,9 +8,9 @@ A page starts private. Explicit sharing consent is stored separately in the exte
 | Unlisted | Anyone with the link | Hidden | No-index |
 | Public | Anyone | Listed, latest update first | No-index unless separately opted in |
 
-Do not infer public consent from a request to share, host, or publish. Ask for a missing default/page password or use the previously saved default. An unlisted URL is discoverable if passed along; a no-index directive asks crawlers not to index it and does not restrict access.
+Apply the user’s explicit audience choice, including a saved preference in their user or agent profile when its scope covers this store and task. For example, a saved unlisted preference can guide new pages; it does not grant homepage listing or search indexing. Preserve existing pages’ access and passwords on updates unless explicitly changed. Without applicable consent, keep the page private and use a saved password or obtain the missing password. A request to share, host, or publish alone does not choose open access. An unlisted URL is discoverable if passed along; a no-index directive asks crawlers not to index it and does not restrict access.
 
-Use an explicit command only when the user requests the corresponding audience change:
+Use the command matching the explicit request or applicable saved preference:
 
 ```sh
 mandate-share sharing briefing --private

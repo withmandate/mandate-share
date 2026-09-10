@@ -4,7 +4,7 @@ Connect a first destination through the guided [setup](setup.md#connect-cloudfla
 
 ## Prepare the page inventory
 
-Select the intended store, build and preview its pages, and resolve any missing private-page passwords. Every private page must have a verifier before publication. Homepage listing and search indexing need explicit consent; see [privacy](privacy.md). Then prepare a release:
+Select the intended store, build and preview its pages yourself, and resolve any missing private-page passwords. Local preview is agent QA; user click-through is optional. Apply explicit sharing choices and applicable saved preferences while preserving existing pages’ access and passwords unless explicitly changed. Every private page must have a verifier before publication. Homepage listing and search indexing need explicit consent; see [privacy](privacy.md). Then prepare a release:
 
 ```sh
 mandate-share plan --store personal
@@ -16,7 +16,7 @@ A comparison uses the last successful local receipt; it is not fresh evidence of
 
 ## Publish the reviewed result
 
-Use existing authorization when it covers the exact destination and changes; otherwise obtain the remaining approval after making the result reviewable. Publish only that candidate:
+When the destination is configured and the task or standing publication authorization covers the exact selected-store inventory and changes, publish and verify the live result without another approval round. A saved access preference alone is not publication authorization. A request concerning one page does not authorize unrelated pages or removals included in the store-wide candidate; obtain only the missing approval after making that inventory reviewable. Publish only that candidate:
 
 ```sh
 mandate-share publish --confirm RETURNED_DIGEST --store personal
@@ -24,7 +24,7 @@ mandate-share publish --confirm RETURNED_DIGEST --store personal
 
 Changed source, access/sharing state, destination, compiled Worker, or candidate files invalidate confirmation. Prepare and review again after a change. A consumed candidate cannot be replayed. Successful publication records a local receipt; inspect the returned live URL before reporting verification.
 
-Check the homepage for deliberately public pages only. Check an unauthenticated request, an incorrect password, successful authorized access, and direct HTML/MDX routes for protected pages. If the user entered the password themselves, let them open the page with it in their browser. Verify requested removals and updates. Report any unfinished live check rather than inferring it from a deploy command.
+Check the homepage for deliberately public pages only. Check an unauthenticated request, an incorrect password, successful authorized access, and direct HTML/MDX routes for protected pages. If the user entered the password themselves, let them open the page with it in their browser. Verify requested removals and updates, then return the live link. Report any unfinished live check rather than inferring it from a deploy command. The published site is served by Cloudflare and does not depend on the publisher’s computer or local preview.
 
 ## Cloudflare behavior and limits
 

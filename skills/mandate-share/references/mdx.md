@@ -26,7 +26,7 @@ sample: true
 Write the explanation in ordinary Markdown. Add components when they help the reader compare or understand the material.
 ```
 
-`title` is required. `layout` can be `narrow`, `wide`, or `full`; `topic` labels the subject (`ai`, `longevity`, `finance`, `world`, or `guide`). Optional `theme` chooses `clarity`, `ledger`, `fieldnotes`, or `blueprint`; see [themes](themes.md) for reader controls and defaults. Set `sample: true` for illustrative claims, keep private sharing as the default. Frontmatter does not grant public access or homepage consent; use the explicit [privacy](privacy.md) workflow for that.
+`title` is required. `layout` can be `narrow`, `wide`, or `full`; `topic` labels the subject (`ai`, `longevity`, `finance`, `world`, or `guide`). The optional `theme` field is accepted but does not affect appearance: generated pages start with Clarity and System mode, and use the reader’s saved choices when available. See [themes](themes.md) for controls and accepted values. Set `sample: true` for illustrative claims, keep private sharing as the default. Frontmatter does not grant public access or homepage consent; use the explicit [privacy](privacy.md) workflow for that.
 
 Use `<StatRow>` and `<Stat>` for a few measurements, `<DataTable>` for comparisons, `<Callout>` for an aside, and `<Collapse>` for optional detail. Consult the catalog for exact props. Preformat numeric values as strings. MDX parses braces as expressions and JSX uses `className`; escape literal braces in prose when necessary. Keep embedded assets local or inline if the exported HTML must work offline.
 
@@ -38,6 +38,6 @@ mandate-share build --store personal
 mandate-share preview brief --store personal
 ```
 
-Importing a prepared MDX file is also supported: `import /absolute/input/brief.mdx --slug brief --store personal`. Its frontmatter controls title, summary, and appearance; HTML-only listing flags are rejected for MDX. An import with an existing MDX slug replaces that source and preserves password state.
+Importing a prepared MDX file is also supported: `import /absolute/input/brief.mdx --slug brief --store personal`. Its frontmatter controls title, summary, and layout; HTML-only listing flags are rejected for MDX. An import with an existing MDX slug replaces that source and preserves password state.
 
 Built MDX produces `STORE/.mandate-share/dist/SLUG.html` and `SLUG.mdx`. The HTML embeds the source in a `script` element with type `text/mdx` for later reuse. An authorized reader can retrieve that source, so it must contain only the material intended for readers. Protection of the hosted URL does not encrypt an HTML file handed directly to someone.

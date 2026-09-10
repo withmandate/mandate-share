@@ -12,7 +12,7 @@ mandate-share password briefing
 mandate-share password --profile client-review
 ```
 
-The command returns a URL and waits. Open that address in the user’s browser. Let them type and confirm the password, choose **Save password**, and wait for the saved result. Do not inspect the field, clipboard, or request body. This keeps the password out of chat.
+The command returns a URL and waits. Explain that this is a temporary local password setup screen, used to keep the value out of chat, then open it in the user’s browser. Let them type and confirm the password, choose **Save password**, and wait for the saved result. Do not inspect the field, clipboard, or request body. Saving changes the local store; it needs publication before readers receive the change.
 
 The browser hashes the password and sends only its verification record to a temporary endpoint tied to the chosen change. Software with full access to the same computer can still inspect it; this flow keeps the value out of the conversation.
 
@@ -22,13 +22,13 @@ Add `--terminal` for hidden terminal input, or `--stdin` when passing a chat-sup
 
 ## Defaults, profiles, and page overrides
 
-The default applies automatically to newly encountered private pages. A name such as `client-review` identifies a reusable password profile, not a user account. List saved profiles with `password --list`, then assign one:
+The default applies automatically to newly encountered private pages. Honor an applicable explicit preference saved in the user’s or agent’s profile when selecting a password profile for new pages. A name such as `client-review` identifies a reusable password profile, not a user account. List saved profiles with `password --list`, then assign one:
 
 ```sh
 mandate-share password briefing --use-profile client-review
 ```
 
-Page overrides persist through content updates. Defaults, named choices, and bindings live in private store configuration so a new agent session can find them. The tool stores salted password verification records instead of reusable plaintext. It can apply a saved profile again, but cannot reveal its original password; copied profile verifiers share their salt. Cookie-signing keys are separate and bind access to the store and page.
+Page overrides persist through content updates; do not replace an existing page’s password with a default or saved preference unless the user explicitly changes it. Defaults, named choices, and bindings live in private store configuration so a new agent session can find them. The tool stores salted password verification records instead of reusable plaintext. It can apply a saved profile again, but cannot reveal its original password; copied profile verifiers share their salt. Cookie-signing keys are separate and bind access to the store and page.
 
 Changing a default or named profile affects future assignments. To change existing pages, show the affected pages and use an explicit list:
 
@@ -38,7 +38,7 @@ mandate-share password --rotate-profile client-review briefing project-update
 
 That applies the profile’s current verifier to the selected pages. One page accepts one active password; multiple recipient-specific passwords for the same page are outside this model. Anyone with the shared password can open the page.
 
-Saving a password is local. An existing live page changes only after a reviewed publication. Verify the live page after that publication. If the user entered the password themselves, let them open the live page with it; do not recover the password through browser automation.
+An existing live page changes only after a reviewed publication. Complete that publication when the task or standing authorization covers the destination and exact inventory; follow [publishing](publishing.md). Verify the live page afterward. If the user entered the password themselves, let them open the live page with it; do not recover the password through browser automation. The local setup screen is no longer needed once saved, and the published page works without the publisher’s computer.
 
 ## Reader unlocks
 

@@ -72,7 +72,7 @@ Start on **Cloudflare Free**, including password-protected sharing. Its allowanc
 
 ## Comfortable to read
 
-Choose **Clarity**, **Ledger**, **Fieldnotes**, or **Blueprint**, each with light and dark modes. A small Appearance button at the top right holds the settings and remembers the reader’s choice. A thin line in the sticky bar shows progress through the article. Imported HTML keeps its original design.
+Pages start with **Clarity** and follow your device’s light or dark mode. Use the small Appearance button at the top right to choose **Clarity**, **Ledger**, **Fieldnotes**, or **Blueprint**, and Light, Dark, or System mode. Your browser remembers those choices across generated pages, the homepage, reloads, and tabs on the same site when storage is available. A thin line in the sticky bar shows progress through the article. Imported HTML keeps its original design.
 
 Review imported HTML before hosting it: its scripts can read other pages a visitor has unlocked on the same site. Use separate stores at different site addresses when that content needs isolation. [HTML guidance](skills/mandate-share/references/raw-html.md#review-active-html).
 

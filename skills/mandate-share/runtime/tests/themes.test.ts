@@ -1,15 +1,15 @@
 import { describe, test } from "node:test";
 import assert from "node:assert/strict";
 import { runInNewContext } from "node:vm";
-import { APPEARANCE_JS, READING_JS } from "../lib/themes.ts";
+import { APPEARANCE_JS, READING_JS, THEMES } from "../lib/themes.ts";
 import { validateFrontmatter } from "../lib/build.ts";
 import { renderArtifact, renderIndex, render404 } from "../lib/shell.ts";
 import type { Frontmatter, PageInfo } from "../lib/types.ts";
 
 /** Execute the shipped inline script with controllable browser events/storage. */
-function reader({ authored = "clarity", saved = null as string | null, dark = false, blocked = false } = {}) {
+function reader({ initialTheme = "clarity", saved = null as string | null, dark = false, blocked = false, html = "" } = {}) {
   const callbacks = new Map<string, (event?: any) => void>();
-  const dataset: Record<string, string> = { theme: authored };
+  const dataset: Record<string, string> = { theme: html ? html.match(/<html[^>]+data-theme="([^"]+)"/)![1]! : initialTheme };
   const attrs: Record<string, string> = {};
   const systemAttrs: Record<string, string> = {};
   const select = { value: "", addEventListener: (name: string, fn: any) => callbacks.set(`select:${name}`, fn) };
@@ -34,41 +34,71 @@ function reader({ authored = "clarity", saved = null as string | null, dark = fa
     },
     addEventListener: (name: string, fn: any) => callbacks.set(name, fn),
   };
-  runInNewContext(APPEARANCE_JS, { document, window });
+  runInNewContext(html ? html.match(/<script>([\s\S]*?)<\/script>/)![1]! : APPEARANCE_JS, { document, window });
   return { dataset, attrs, select, systemAttrs, storage,
     mount() { mounted = true; callbacks.get("DOMContentLoaded")!(); },
     mode(value: string) { callbacks.get(`${value}:click`)!(); },
     system() { callbacks.get("system:click")!(); },
     theme(value: string) { select.value = value; callbacks.get("select:change")!(); },
     os(value: boolean) { media.matches = value; callbacks.get("media")!(); },
-    sync(value: string | null) { storage.value = value; callbacks.get("storage")!({ key: "mandate-share.appearance.v1" }); },
+    sync(value: string | null, key: string | null = "mandate-share.appearance.v1") { storage.value = value; callbacks.get("storage")!({ key }); },
+    restore(value: string | null, darkMode: boolean) { storage.value = value; media.matches = darkMode; callbacks.get("pageshow")!({ persisted: true }); },
   };
 }
 
 describe("offline reader appearance", () => {
-  test("mode-only changes preserve each page's authored theme default", () => {
-    const first = reader({ authored: "ledger" });
-    first.mount(); first.mode("dark");
-    assert.deepStrictEqual(JSON.parse(first.storage.value!), { mode: "dark" });
-    const next = reader({ authored: "blueprint", saved: first.storage.value });
-    next.mount();
-    assert.strictEqual(next.dataset.theme, "blueprint");
-    assert.strictEqual(next.dataset.mode, "dark");
-    next.system();
-    assert.deepStrictEqual(JSON.parse(next.storage.value!), { mode: "system" });
+  test("Clarity and System are the first-paint defaults regardless of page metadata", () => {
+    for (const { id } of THEMES) for (const dark of [false, true]) {
+      const page = reader({ initialTheme: id, dark });
+      assert.deepStrictEqual(page.dataset, { theme: "clarity", mode: dark ? "dark" : "light", appearanceReady: "" });
+      page.mount();
+      assert.strictEqual(page.select.value, "clarity");
+      assert.strictEqual(page.systemAttrs["aria-pressed"], "true");
+    }
   });
-  test("first paint, reader overrides, reload, system reset and cross-tab changes", () => {
-    const page = reader({ authored: "ledger", dark: true });
-    assert.deepStrictEqual(page.dataset, { theme: "ledger", mode: "dark", appearanceReady: "" });
+
+  test("mode-only choices keep Clarity across pages, including stored mode-only preferences", () => {
+    for (const mode of ["light", "dark", "system"]) {
+      const first = reader({ initialTheme: "ledger", dark: true });
+      first.mount(); first.mode(mode);
+      for (const saved of [first.storage.value, JSON.stringify({ mode })]) {
+        const next = reader({ initialTheme: "blueprint", saved, dark: true });
+        next.mount();
+        assert.strictEqual(next.dataset.theme, "clarity");
+        assert.strictEqual(next.dataset.mode, mode === "system" ? "dark" : mode);
+        next.system();
+        assert.deepStrictEqual(JSON.parse(next.storage.value!), { theme: "clarity", mode: "system" });
+      }
+    }
+  });
+
+  test("reader choices persist from the homepage through generated MDX pages and reloads", () => {
+    const shells = [renderIndex([], ""), ...THEMES.map(({ id }) => renderArtifact({
+      slug: "sample", fm: { title: "Sample", theme: id }, contentHtml: "<p>A sample.</p>", css: "", mdxSource: "A sample.",
+    })), render404("")];
+    for (const { id } of THEMES) for (const mode of ["light", "dark", "system"]) {
+      const homepage = reader({ html: shells[0]!, dark: true });
+      homepage.mount(); homepage.theme(id); homepage.mode(mode);
+      for (const html of [...shells, shells[0]!]) {
+        const page = reader({ html, saved: homepage.storage.value, dark: true });
+        assert.strictEqual(page.dataset.theme, id);
+        assert.strictEqual(page.dataset.mode, mode === "system" ? "dark" : mode);
+        page.mount();
+        assert.strictEqual(page.select.value, id);
+        assert.strictEqual(page.systemAttrs["aria-pressed"], String(mode === "system"));
+      }
+    }
+  });
+
+  test("explicit mode, System changes, and cross-tab updates keep controls in sync", () => {
+    const page = reader({ initialTheme: "ledger", dark: true });
     page.mount();
-    assert.strictEqual(page.select.value, "ledger");
-    assert.strictEqual(page.systemAttrs["aria-pressed"], "true");
     page.mode("light");
     assert.strictEqual(page.dataset.mode, "light");
     page.os(false); page.os(true);
     assert.strictEqual(page.dataset.mode, "light");
     page.theme("fieldnotes");
-    const reloaded = reader({ authored: "blueprint", saved: page.storage.value, dark: true });
+    const reloaded = reader({ initialTheme: "blueprint", saved: page.storage.value, dark: true });
     reloaded.mount();
     assert.strictEqual(reloaded.dataset.theme, "fieldnotes");
     assert.strictEqual(reloaded.dataset.mode, "light");
@@ -77,33 +107,67 @@ describe("offline reader appearance", () => {
     assert.strictEqual(reloaded.systemAttrs["aria-pressed"], "true");
     reloaded.os(false);
     assert.strictEqual(reloaded.dataset.mode, "light");
+    page.theme("ledger"); page.mode("dark");
+    reloaded.sync(page.storage.value);
+    assert.strictEqual(reloaded.dataset.theme, "ledger");
+    assert.strictEqual(reloaded.select.value, "ledger");
+    assert.strictEqual(reloaded.dataset.mode, "dark");
+    assert.strictEqual(reloaded.attrs["aria-pressed"], "true");
+    reloaded.sync(JSON.stringify({ theme: "blueprint", mode: "light" }), "unrelated-setting");
+    assert.strictEqual(reloaded.dataset.theme, "ledger");
     reloaded.sync(null);
-    assert.strictEqual(reloaded.dataset.theme, "blueprint");
+    assert.strictEqual(reloaded.dataset.theme, "clarity");
+    assert.strictEqual(reloaded.dataset.mode, "light");
+    assert.strictEqual(reloaded.systemAttrs["aria-pressed"], "true");
+    reloaded.theme("blueprint"); reloaded.mode("dark");
+    reloaded.sync(null, null);
+    assert.strictEqual(reloaded.dataset.theme, "clarity");
+    assert.strictEqual(reloaded.dataset.mode, "light");
+  });
+
+  test("back and forward restoration refreshes stored choices and current System appearance", () => {
+    const page = reader({ saved: JSON.stringify({ theme: "ledger", mode: "light" }) });
+    page.mount();
+    page.restore(JSON.stringify({ theme: "fieldnotes", mode: "system" }), true);
+    assert.strictEqual(page.dataset.theme, "fieldnotes");
+    assert.strictEqual(page.dataset.mode, "dark");
+    assert.strictEqual(page.select.value, "fieldnotes");
+    assert.strictEqual(page.systemAttrs["aria-pressed"], "true");
+    page.restore(null, false);
+    assert.strictEqual(page.dataset.theme, "clarity");
+    assert.strictEqual(page.dataset.mode, "light");
   });
 
   test("corrupt preferences and blocked storage preserve working controls", () => {
     for (const saved of ['{"theme":"unknown","mode":"neon"}', '{broken', 'null']) {
-      const page = reader({ authored: "ledger", saved });
+      const page = reader({ initialTheme: "ledger", saved });
       page.mount();
-      assert.strictEqual(page.dataset.theme, "ledger");
+      assert.strictEqual(page.dataset.theme, "clarity");
       assert.strictEqual(page.dataset.mode, "light");
       page.theme("<script>");
-      assert.strictEqual(page.dataset.theme, "ledger");
+      assert.strictEqual(page.dataset.theme, "clarity");
     }
-    const page = reader({ blocked: true });
+    const partial = reader({ saved: JSON.stringify({ theme: "ledger", mode: "invalid" }), dark: true });
+    assert.strictEqual(partial.dataset.theme, "ledger");
+    assert.strictEqual(partial.dataset.mode, "dark");
+    const page = reader({ initialTheme: "ledger", blocked: true, dark: true });
+    assert.strictEqual(page.dataset.theme, "clarity");
+    assert.strictEqual(page.dataset.mode, "dark");
     page.mount(); page.mode("dark"); page.theme("blueprint");
+    page.restore(null, false);
     assert.strictEqual(page.dataset.mode, "dark");
     assert.strictEqual(page.dataset.theme, "blueprint");
   });
 
-  test("author theme is validated and generated shells preserve embedded source", () => {
+  test("theme metadata remains validated and preserved in source while every shell starts with Clarity", () => {
     assert.throws(() => validateFrontmatter({ title: "Sample", theme: "unknown" } as unknown as Frontmatter), (error) => error instanceof Error && error.message.includes("Unknown theme"));
+    for (const { id } of THEMES) assert.doesNotThrow(() => validateFrontmatter({ title: "Sample", theme: id }));
     const source = '---\ntitle: Sample\ntheme: ledger\n---\n\nA sample.\n';
     const page = renderArtifact({ slug: "sample", fm: { title: "Sample", theme: "ledger" }, contentHtml: "<p>A sample.</p>", css: "body { color: black; }", mdxSource: source });
-    assert.ok((page).includes('<html lang="en" data-theme="ledger">'));
     assert.ok((page.indexOf(APPEARANCE_JS)) < (page.indexOf("<style>")));
     assert.ok((page).includes(source));
     for (const html of [page, renderIndex([], ""), render404("")]) {
+      assert.ok(html.includes('<html lang="en" data-theme="clarity">'));
       assert.ok((html).includes('data-mode-choice="dark"'));
       assert.ok((html).includes('aria-label="Theme"'));
       assert.ok((html).includes('data-mode-choice="system"'));

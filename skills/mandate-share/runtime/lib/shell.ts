@@ -1,5 +1,5 @@
 import type { Frontmatter, PageInfo } from "./types.ts";
-import { APPEARANCE_JS, READING_JS, appearanceControls, DEFAULT_THEME, isTheme } from "./themes.ts";
+import { APPEARANCE_JS, READING_JS, appearanceControls, DEFAULT_THEME } from "./themes.ts";
 
 const esc = (s: string): string =>
   s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -87,7 +87,7 @@ export function renderArtifact(opts: {
   const metadata = [fm.topic && fm.topic !== "guide" ? esc(fm.topic) : "", date ? esc(date) : "", fm.sample ? '<span class="chip">sample data</span>' : ""].filter(Boolean).join(" · ");
 
   return `<!doctype html>
-<html lang="en" data-theme="${isTheme(fm.theme) ? fm.theme : DEFAULT_THEME}">
+<html lang="en" data-theme="${DEFAULT_THEME}">
 ${head(title, fm.summary ?? "", css, opts.indexable === true)}
 <body data-topic="${esc(topic)}" data-layout="${esc(layout)}">
 ${readerBar(title, true)}

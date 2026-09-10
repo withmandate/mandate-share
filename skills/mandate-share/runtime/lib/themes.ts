@@ -15,24 +15,24 @@ export const APPEARANCE_JS = `(() => {
   const names = ${JSON.stringify(THEMES.map(theme => theme.id))};
   const key = "mandate-share.appearance.v1";
   const root = document.documentElement;
-  const authored = names.includes(root.dataset.theme) ? root.dataset.theme : "clarity";
-  let theme = authored;
-  let readerTheme;
+  const defaultTheme = ${JSON.stringify(DEFAULT_THEME)};
+  let theme = defaultTheme;
   let preference = "system";
   let media;
   try { media = window.matchMedia("(prefers-color-scheme: dark)"); } catch {}
   function read() {
-    theme = authored;
-    readerTheme = undefined;
+    let stored;
+    try { stored = window.localStorage.getItem(key); } catch { return; }
+    theme = defaultTheme;
     preference = "system";
     try {
-      const saved = JSON.parse(window.localStorage.getItem(key) || "null");
-      if (saved && names.includes(saved.theme)) theme = readerTheme = saved.theme;
+      const saved = JSON.parse(stored || "null");
+      if (saved && names.includes(saved.theme)) theme = saved.theme;
       if (saved && ["light", "dark", "system"].includes(saved.mode)) preference = saved.mode;
     } catch {}
   }
   function save() {
-    try { window.localStorage.setItem(key, JSON.stringify({ theme: readerTheme, mode: preference })); } catch {}
+    try { window.localStorage.setItem(key, JSON.stringify({ theme, mode: preference })); } catch {}
   }
   function apply() {
     const mode = preference === "system" ? (media?.matches ? "dark" : "light") : preference;
@@ -47,7 +47,7 @@ export const APPEARANCE_JS = `(() => {
   function bind() {
     document.querySelectorAll("[data-theme-select]").forEach(select => select.addEventListener("change", () => {
       if (!names.includes(select.value)) return;
-      theme = readerTheme = select.value; save(); apply();
+      theme = select.value; save(); apply();
     }));
     document.querySelectorAll("[data-mode-choice]").forEach(button => button.addEventListener("click", () => {
       const next = button.dataset.modeChoice;
@@ -70,6 +70,7 @@ export const APPEARANCE_JS = `(() => {
   if (media?.addEventListener) media.addEventListener("change", onSystemChange);
   else if (media?.addListener) media.addListener(onSystemChange);
   window.addEventListener("storage", event => { if (event.key === key || event.key === null) { read(); apply(); } });
+  window.addEventListener("pageshow", event => { if (event.persisted) { read(); apply(); } });
 })();`;
 
 export function appearanceControls(): string {
